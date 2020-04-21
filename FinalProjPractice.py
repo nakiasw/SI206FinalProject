@@ -34,6 +34,21 @@ def titles_and_rankings(year):
 
     return info
 
+
+# this function takes in the list of tuples (info) and creates a table in the database called "Top 100"
+def billboardData(info):
+    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    conn = sqlite3.connect(path + 'WilkinsSheltonRecords.db')
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS Top100')
+    cur.execute('CREATE TABLE Top100 (id INTEGER, rank INTEGER, title TEXT, artist TEXT)')
+    x = 0
+    for song in info:
+        cur.execute('INSERT INTO Top100 (id, rank, title, artist) VALUES (?,?,?,?)', (x,song[0],song[1],song[2]))
+        x += 1
+    conn.commit()
+    cur.close()
+    return
     
 def genius_info(billb_list):
     """Inputs a list of tuples (song title and rank). For each song title, using the Genius API website, return the artist, genre, 
@@ -61,4 +76,10 @@ def pop_label_tabel():
 
 
 #Space below will be used for testing
-print(titles_and_rankings(2005))
+def main():
+    year = input("Please enter a year between 2006 and 2019: ")
+    info = titles_and_rankings(int(year))
+    billboardData(info)
+
+if __name__ == "__main__":
+    main()
