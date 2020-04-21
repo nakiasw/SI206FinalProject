@@ -4,31 +4,35 @@ import os
 import sqlite3
 
 #Create a function to pull song titles and their ranking from the billboard website
-def titles_and_rankings(url):
+# returns a list of tuples in format (rank, title, artist(s))
+def titles_and_rankings(year):
     """Inputs a website that'll return the title of each song and their ranking in a list of tuples."""
-    r = requests.get(url) #might have to add https:// 
-    data = r.text
-    soup = BeautifulSoup(data, 'lxml')
+    # error check to make sure the input year is between 2006 and 2019
+    if year > 2019 or year < 2006:
+        print("Please enter a year between 2006 and 2019")
+        exit(1)
+    newurl = "https://www.billboard.com/charts/year-end/" + str(year) + "/hot-100-songs"
+    page = requests.get(newurl)
+    soup2 = BeautifulSoup(page.content, "html.parser")
+    songs = soup2.find_all('div', class_="ye-chart-item__primary-row")
+    info = []
+    for song in songs:
+        rank = ""
+        title = ""
+        artist = ""
+        for x in range(len(song.contents)):
+            if x == 1:
+                rank = int(song.contents[x].text.strip("\n"))
+            if x == 5:
+                for y in range(len(song.contents[x].contents)):
+                    if y == 1:
+                        title = song.contents[x].contents[y].text.strip("\n")
+                    if y == 3:
+                        artist = song.contents[x].contents[y].text.strip("\n")
+        songInfo = (rank, title, artist)
+        info.append(songInfo)
 
-    body = soup.find('body')
-    main = body.find('main')
-    article = main.find('article')
-    div1 = article.find('div', class_ = 'longform__body js-fitvids-content')
-    div2 = div1.find('div', class_ = 'container') 
-    div3 = div2.find('div', class_ = 'longform__body-primary')
-
-    para = div3.find_all('p') #find_all returns a list of all p tags
-
-    l = []
-    for p in para:
-        p = str(p)
-        if '<strong>' in p: #have to figure out how to git rid of some of the a tags
-
-            p.replace('<p><strong>','').replace('</strong></p>', '')
-            l.append(p)    #list of the rankings in strings that still inlcudes the <p><strong>
-
-
-    return len(l)
+    return info
 
     
 def genius_info(billb_list):
@@ -57,4 +61,4 @@ def pop_label_tabel():
 
 
 #Space below will be used for testing
-print(titles_and_rankings('https://www.billboard.com/articles/events/year-in-music-2018/8489483/best-songs-2018-staff-picks'))
+print(titles_and_rankings(2005))
