@@ -4,32 +4,50 @@ import os
 import sqlite3
 
 #Create a function to pull song titles and their ranking from the billboard website
-def titles_and_rankings(url):
+# returns a list of tuples in format (rank, title, artist(s))
+def titles_and_rankings(year):
     """Inputs a website that'll return the title of each song and their ranking in a list of tuples."""
-    r = requests.get(url) #might have to add https:// 
-    data = r.text
-    soup = BeautifulSoup(data, 'lxml')
+    # error check to make sure the input year is between 2006 and 2019
+    if year > 2019 or year < 2006:
+        print("Please enter a year between 2006 and 2019")
+        exit(1)
+    newurl = "https://www.billboard.com/charts/year-end/" + str(year) + "/hot-100-songs"
+    page = requests.get(newurl)
+    soup2 = BeautifulSoup(page.content, "html.parser")
+    songs = soup2.find_all('div', class_="ye-chart-item__primary-row")
+    info = []
+    for song in songs:
+        rank = ""
+        title = ""
+        artist = ""
+        for x in range(len(song.contents)):
+            if x == 1:
+                rank = int(song.contents[x].text.strip("\n"))
+            if x == 5:
+                for y in range(len(song.contents[x].contents)):
+                    if y == 1:
+                        title = song.contents[x].contents[y].text.strip("\n")
+                    if y == 3:
+                        artist = song.contents[x].contents[y].text.strip("\n")
+        songInfo = (rank, title, artist)
+        info.append(songInfo)
 
-    body = soup.find('body')
-    main = body.find('main')
-    article = main.find('article')
-    div1 = article.find('div', class_ = 'longform__body js-fitvids-content')
-    div2 = div1.find('div', class_ = 'container') 
-    div3 = div2.find('div', class_ = 'longform__body-primary')
+    return info
 
-    para = div3.find_all('p') #find_all returns a list of all p tags
-
-    l = []
-    for p in para:
-        p = str(p)
-        if '<strong>' in p: #have to figure out how to git rid of some of the a tags
-
-            p.replace('<p><strong>','').replace('</strong></p>', '')
-            l.append(p)    #list of the rankings in strings that still inlcudes the <p><strong>
-
-
-    return len(l)
-
+# this function takes in the list of tuples (info) and creates a table in the database called "Top 100"
+def billboardData(info):
+    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    conn = sqlite3.connect(path + 'WilkinsSheltonRecords.db')
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS Top100')
+    cur.execute('CREATE TABLE Top100 (id INTEGER, rank INTEGER, title TEXT, artist TEXT)')
+    x = 0
+    for song in info:
+        cur.execute('INSERT INTO Top100 (id, rank, title, artist) VALUES (?,?,?,?)', (x,song[0],song[1],song[2]))
+        x += 1
+    conn.commit()
+    cur.close()
+    return
     
 def genius_info(billb_list):
     """Inputs a list of tuples (song title and rank). For each song title, using the Genius API website, return the artist, genre, 
@@ -57,4 +75,10 @@ def pop_label_tabel():
 
 
 #Space below will be used for testing
-print(titles_and_rankings('https://www.billboard.com/articles/events/year-in-music-2018/8489483/best-songs-2018-staff-picks'))
+def main():
+    year = input("Please enter a year between 2006 and 2019: ")
+    info = titles_and_rankings(int(year))
+    billboardData(info)
+
+if __name__ == "__main__":
+    main()
