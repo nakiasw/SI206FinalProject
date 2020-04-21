@@ -34,6 +34,7 @@ def titles_and_rankings(year):
 
     return info
 
+
 # this function takes in the list of tuples (info) and creates a table in the database called "Top 100"
 def billboardData(info):
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
