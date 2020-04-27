@@ -4,8 +4,6 @@ import os
 import sqlite3
 import json
 
-api_data = {}
-
 #Create a function to pull song titles and their ranking from the billboard website
 # returns a list of tuples in format (rank, title, artist(s))
 def titles_and_rankings():
