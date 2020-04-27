@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests
 import os
 import sqlite3
+import hashlib
+import json
 
 #Create a function to pull song titles and their ranking from the billboard website
 # returns a list of tuples in format (rank, title, artist(s))
@@ -55,14 +57,49 @@ def billboardData(info):
     cur.close()
     return
     
-def genius_info(billb_list):
-    """Inputs a list of tuples (song title and rank). For each song title, using the Genius API website, return the artist, genre, 
-    release date, and record label as a dictionary, where the song title is the key, and the values is the information previously said."""
-    pass
+def lastfm_info(info):
+    """Inputs a list of tuples (song title and rank). Returns a dictionary with keys being id in the Top100 table, and the values
+    are a tuple in form (track, artist, genre[])."""
+    headers = {'user-agent': "WilkinsShelton"}
+    payload = {'api_key': "b08f231d65c50a751a8f4f7e3cc72f22", 'method': 'track.getInfo', 'autocorrect': 1, 'format': 'json'}
+    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    conn = sqlite3.connect(path + 'WilkinsSheltonRecords.db')
+    cur = conn.cursor()
+    print("Requesting info from Lastfm API...")
 
-#Create a database with the information from genius_info
-def genius_table():
-    pass
+    dict = {}
+    for data in info:
+        track = data[1]
+        artist = data[2]
+        payload['track'] = track
+        payload["artist"] = artist
+        r = requests.get('http://ws.audioscrobbler.com/2.0/', headers=headers, params=payload)
+        if r.status_code != 200:
+            print("Error: Artist %s not found with API" % artist)
+        else:
+            tags = json.loads(r.text)
+            if 'track' not in tags.keys():
+                continue
+            table = tags['track']
+            names = table['toptags']
+            morenames = names['tag']
+            genres = []
+            for genre in morenames:
+                genres.append(genre['name'])
+            cur.execute('SELECT id FROM Top100 WHERE title=?', (track,))
+            stuff = (track, artist, genres)
+            dict[cur.fetchone()[0]] = stuff
+    return dict
+
+# Create a database with the information from genius_info
+def genius_table(info):
+    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    conn = sqlite3.connect(path + 'WilkinsSheltonRecords.db')
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS Genres')
+    cur.execute('CREATE TABLE Genres (id INTEGER, genre TEXT')
+
+    
 
 def record_label_count(name):
     """Returns the count of the record label name inputted."""
@@ -82,10 +119,20 @@ def pop_label_tabel():
 
 #Space below will be used for testing
 def main():
-    yearLow = input("Please enter a lower bound year between 2006 and 2019: ")
-    yearHi = input("Please enter an upper bound year or the same year between 2006 and 2019: ")
-    info = titles_and_rankings(int(yearLow), int(yearHi))
+    #yearLow = input("Please enter a lower bound year between 2006 and 2019: ")
+    #yearHi = input("Please enter an upper bound year or the same year between 2006 and 2019: ")
+    #info = titles_and_rankings(int(yearLow), int(yearHi))
+    info = titles_and_rankings(2019, 2019)
     billboardData(info)
+    lastfm_info(info)
+
+
+
+    #api_key = "b08f231d65c50a751a8f4f7e3cc72f22"
+    #api_sec = "acdf9b2e149b02276011b4160fe7a232"
+    #api_sig = hashlib.md5("api_keyxxxxxxxxmethodauth.getSessiontokenxxxxxxxmysecret")
+
+
 
 if __name__ == "__main__":
     main()
