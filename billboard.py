@@ -17,6 +17,9 @@ def titles_and_rankings():
     if yearLow > yearHi:
         print("Please provide a valid range")
         exit(1)
+    if yearHi - yearLow != 2:
+        print("Please provide a 3 year range")
+        exit(1)
     z = yearLow
     info = []
     while z <= yearHi:
