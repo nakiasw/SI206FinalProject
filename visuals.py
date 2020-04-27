@@ -138,6 +138,19 @@ def bar1(data):
     plt.legend()
     plt.show()
 
+    max = 0
+    index = 0
+    x = 0
+    for list in newlist:
+        Sum = sum(list)
+        avg = Sum / len(list)
+        if avg > max:
+            max = avg
+            index = x
+        x += 1
+    print("\nBased on the data, we predict the 2020 BillBoard 100 Top Genre will be: %s\n" % allgenres[index])
+
+
 
 ###############################################################################################################################################
 data = calc_freq()
