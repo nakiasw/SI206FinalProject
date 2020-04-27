@@ -30,6 +30,8 @@ def lastfm_info():
         else:
             tags = json.loads(r.text)
             if 'track' not in tags.keys():
+                stuff = (data[0], data[3], data[4], [])
+                dict[data[0]] = stuff
                 continue
             table = tags['track']
             names = table['toptags']
@@ -39,10 +41,11 @@ def lastfm_info():
                 genres.append(genre['name'])
             stuff = (data[0], track, artist, genres)
             dict[data[0]] = stuff
-    return dict
+    with open('genres.json', 'w+') as f:
+        json.dump(dict, f)
 
 # This function uses the data from the api and stores 20 at a time
-def genre_table(data):
+def genre_table():
     print("Inserting 20 entries into Genre table...")
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
     conn = sqlite3.connect(path + 'WilkinsSheltonRecords.db')
@@ -50,21 +53,26 @@ def genre_table(data):
     cur.execute('SELECT COUNT(*) FROM Genres')
     index = cur.fetchone()[0]
     stop = index + 20
+    with open('genres.json', 'r') as f:
+        data = json.load(f)
     if stop > len(data):
         stop = len(data)
         print("Last call needed")
-    while index <= stop:
-        if index not in data.keys():
-            index += 1
-            continue
-        song = data[index]
+    while index < stop:
+        song = data[str(index)]
         if song[3] == []:
             index += 1
+            cur.execute('INSERT INTO Genres (id, genre) VALUES (?,?)', (song[0], "none"))
             continue
         cur.execute('INSERT INTO Genres (id, genre) VALUES (?,?)', (song[0], song[3][0]))
         index += 1
     conn.commit()
     cur.close()
 
-api_data = lastfm_info()
-genre_table(api_data)
+path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+conn = sqlite3.connect(path + 'WilkinsSheltonRecords.db')
+cur = conn.cursor()
+cur.execute('SELECT COUNT(*) FROM Genres')
+if cur.fetchone()[0] == 0:
+    lastfm_info()
+genre_table()
