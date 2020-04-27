@@ -34,6 +34,13 @@ def calc_freq():
         if genre == 'not country' or genre == 'racist country':
             genre = 'country'
         genres[genre] = genres.get(genre, 0) + 1
+    f = open('data.txt', 'w+')
+    for year in dict:
+        f.write("Year: %s\n" % year)
+        for genre in dict[year]:
+            f.write("%s: %d\n" % (genre, dict[year][genre]))
+        f.write("\n")
+    f.close()
     return dict
 
 # This function takes the raw data from the first function and refines it to only show the top 4 genres of each year

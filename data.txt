@@ -1,0 +1,63 @@
+Year: 2017
+pop: 20
+none: 45
+funk: 3
+hip hop: 12
+electronic: 6
+country: 4
+rock: 3
+soul: 2
+featuring: 1
+21 savage: 1
+needed me: 1
+chill: 1
+american: 1
+
+Year: 2018
+hip hop: 20
+none: 32
+linedance 2019: 1
+electronic: 3
+british: 2
+pop: 19
+rnb: 2
+nf: 1
+country: 4
+featuring: 3
+linedance 2017: 1
+rock: 4
+offset: 1
+soundtrack: 1
+halsey: 1
+american: 2
+linedance 2018: 1
+reggaeton: 1
+colbert: 1
+
+Year: 2019
+none: 33
+hip hop: 17
+pop: 19
+electronic: 4
+rock: 3
+justin bieber: 1
+soundtrack: 1
+gunna: 1
+2010s: 1
+fallon: 1
+cardi b: 1
+linedance 2018: 1
+featuring: 1
+migos: 1
+linedance 2019: 2
+calboy: 1
+american: 1
+snl: 2
+fm4: 1
+yk osiris: 1
+british: 1
+country: 3
+rnb: 1
+nle choppa: 1
+meyers: 1
+
